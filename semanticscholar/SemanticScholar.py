@@ -9,19 +9,23 @@ from tenacity import (retry,
 class SemanticScholar:
 
     DEFAULT_API_URL = 'https://api.semanticscholar.org/v1'
+    GRAPH_API_URL = 'https://api.semanticscholar.org/graph/v1'
     DEFAULT_PARTNER_API_URL = 'https://partner.semanticscholar.org/v1'
+    GRAPH_PARTNER_API_URL = 'https://partner.semanticscholar.org/graph/v1'
 
     auth_header = {}
 
     def __init__(
                 self,
                 timeout: int=2,
+                graph_api: bool=False,
                 api_key: str=None,
                 api_url: str=None
             ) -> None:
         '''
         :param float timeout: an exception is raised
             if the server has not issued a response for timeout seconds.
+        :param boolean graph_api: use old (default) or new, Academic Graph, API
         :param str api_key: (optional) private API key.
         :param str api_url: (optional) custom API url.
         '''
@@ -29,12 +33,18 @@ class SemanticScholar:
         if api_url:
             self.api_url = api_url
         else:
-            self.api_url = self.DEFAULT_API_URL
+            if graph_api:
+                self.api_url = self.GRAPH_API_URL
+            else:
+                self.api_url = self.DEFAULT_API_URL
 
         if api_key:
             self.auth_header = {'x-api-key': api_key}
             if not api_url:
-                self.api_url = self.DEFAULT_PARTNER_API_URL
+                if graph_api:
+                    self.api_url = self.GRAPH_PARTNER_API_URL
+                else:
+                    self.api_url = self.DEFAULT_PARTNER_API_URL
 
         self.timeout = timeout
 
