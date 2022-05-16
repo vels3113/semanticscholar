@@ -48,10 +48,11 @@ class SemanticScholar:
 
         self.timeout = timeout
 
-    def paper(self, id: str, include_unknown_refs: bool=False) -> dict:
+    def paper(self, id: str, fields: list=[], include_unknown_refs: bool=False) -> dict:
         '''Paper lookup
 
         :param str id: S2PaperId, DOI or ArXivId.
+        :param list fields: list of fields in query.
         :param float timeout: an exception is raised
             if the server has not issued a response for timeout seconds.
         :param bool include_unknown_refs:
@@ -60,19 +61,20 @@ class SemanticScholar:
         :rtype: :class:`dict`
         '''
 
-        data = self.__get_data('paper', id, include_unknown_refs)
+        data = self.__get_data('paper', id, fields, include_unknown_refs)
 
         return data
 
-    def author(self, id: str) -> dict:
+    def author(self, id: str, fields: list=[]) -> dict:
         '''Author lookup
 
         :param str id: S2AuthorId.
+        :param list fields: list of fields in query
         :returns: author data or empty :class:`dict` if not found.
         :rtype: :class:`dict`
         '''
 
-        data = self.__get_data('author', id, False)
+        data = self.__get_data('author', id, fields, False)
 
         return data
 
@@ -85,12 +87,14 @@ class SemanticScholar:
                 self,
                 method: Literal['paper', 'author'],
                 id: str,
+                fields: list,
                 include_unknown_refs: bool
             ) -> dict:
         '''Get data from Semantic Scholar API
 
         :param str method: 'paper' or 'author'.
         :param str id: id of the corresponding method.
+        :param list fields: list of fields in query.
         :returns: data or empty :class:`dict` if not found.
         :rtype: :class:`dict`
         '''
@@ -103,9 +107,12 @@ class SemanticScholar:
             )
 
         url = '{}/{}/{}'.format(self.api_url, method, id)
+        payload = {}
         if include_unknown_refs:
-            url += '?include_unknown_references=true'
-        r = requests.get(url, timeout=self.timeout, headers=self.auth_header)
+            payload['include_unknown_references'] = 'true'
+        if (fields != []):
+            payload['fields'] = ','.join(fields)
+        r = requests.get(url, params=payload, timeout=self.timeout, headers=self.auth_header)
 
         if r.status_code == 200:
             data = r.json()

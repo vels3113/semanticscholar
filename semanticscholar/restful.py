@@ -29,7 +29,7 @@ def paper(
 
     sch = SemanticScholar(timeout, api_key, api_url)
 
-    return sch.paper(id, include_unknown_references)
+    return sch.paper(id, include_unknown_refs=include_unknown_references)
 
 
 def author(id, timeout: int=2, api_key: str=None, api_url: str=None) -> dict:
