@@ -5,6 +5,10 @@ from tenacity import (retry,
                       retry_if_exception_type,
                       stop_after_attempt)
 
+from semanticscholar.semanticscholar import API_definitions, API_errors
+
+class SemanticScholarError(Exception):
+    pass
 
 class SemanticScholar:
 
@@ -122,5 +126,7 @@ class SemanticScholar:
             raise PermissionError('HTTP status 403 Forbidden.')
         elif r.status_code == 429:
             raise ConnectionRefusedError('HTTP status 429 Too Many Requests.')
+        elif str(r.status_code) in API_errors.keys():
+            raise SemanticScholarError(r.json()['error'])
 
         return data
